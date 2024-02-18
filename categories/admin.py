@@ -14,3 +14,8 @@ class CategoryAdmin(admin.ModelAdmin):
     # autocomplete_fields = ()
     readonly_fields = ("id",)
     inlines = (ProductInline,)
+
+    def product_count(self, obj):
+        return obj.count_products
+
+    product_count.short_description = 'Number of Products'

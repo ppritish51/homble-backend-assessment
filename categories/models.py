@@ -21,3 +21,8 @@ class Category(models.Model):
         ordering = []
         verbose_name = "Category"
         verbose_name_plural = "Categories"
+
+    @property
+    def count_products(self):
+        # Returns the count of active products in this category
+        return self.products.filter(is_active=True).count()

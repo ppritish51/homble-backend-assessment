@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -43,6 +44,9 @@ class Product(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    edited_at = models.DateTimeField(auto_now=True, help_text=_("Timestamp of the most recent edit"))
+    ingredients = models.CharField(max_length=500, blank=True, help_text=_("List of ingredients"))
+
     def save(self, *args, **kwargs):
         self.name = self.name.strip().title()
         super().save(*args, **kwargs)
@@ -56,3 +60,20 @@ class Product(models.Model):
         ordering = []
         verbose_name = "Product"
         verbose_name_plural = "Products"
+
+
+class Sku(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='skus')
+    size = models.PositiveSmallIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ('product', 'size')
+
+    def __str__(self):
+        return f"{self.product.name} - {self.size}g"
+
+    def clean(self):
+        # Enforce uniqueness for the size field per product
+        if Sku.objects.filter(product=self.product, size=self.size).exclude(pk=self.pk).exists():
+            raise ValidationError("A SKU with this size already exists for this product.")

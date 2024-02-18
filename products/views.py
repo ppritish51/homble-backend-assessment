@@ -13,9 +13,16 @@ from .serializers import ProductListSerializer
 @permission_classes([AllowAny])
 def products_list(request):
     """
-    List of all products.
+    List of all products or filtered by refrigeration need.
     """
 
-    products = Product.objects.all()
+    is_refrigerated = request.query_params.get('is_refrigerated')
+
+    if is_refrigerated is not None:
+        is_refrigerated = is_refrigerated.lower() in ['true', '1']
+        products = Product.objects.filter(is_refrigerated=is_refrigerated)
+    else:
+        products = Product.objects.all()
+
     serializer = ProductListSerializer(products, many=True)
     return Response({"products": serializer.data}, status=HTTP_200_OK)
