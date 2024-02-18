@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -68,6 +69,24 @@ class Sku(models.Model):
     selling_price = models.PositiveSmallIntegerField()
     platform_commission = models.PositiveSmallIntegerField()
     cost_price = models.PositiveSmallIntegerField()
+
+    MEASUREMENT_CHOICES = [
+        ('gm', 'Grams'),
+        ('kg', 'Kilograms'),
+        ('mL', 'Milliliters'),
+        ('L', 'Liters'),
+        ('pc', 'Pieces'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending for Approval'),
+        ('approved', 'Approved'),
+        ('discontinued', 'Discontinued'),
+    ]
+
+    measurement_unit = models.CharField(max_length=2, choices=MEASUREMENT_CHOICES)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='pending')
+    size = models.PositiveSmallIntegerField(validators=[MaxValueValidator(999)])
 
     def save(self, *args, **kwargs):
         self.selling_price = self.cost_price + self.platform_commission

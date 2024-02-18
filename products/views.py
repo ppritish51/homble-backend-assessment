@@ -1,3 +1,4 @@
+from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -5,8 +6,9 @@ from rest_framework.status import (
     HTTP_200_OK,
 )
 
-from .models import Product
-from .serializers import ProductListSerializer
+from .models import Product, Sku
+from .permissions import IsSupervisor
+from .serializers import ProductListSerializer, SkuSerializer, ProductSerializer
 
 
 @api_view(["GET"])
@@ -26,3 +28,21 @@ def products_list(request):
 
     serializer = ProductListSerializer(products, many=True)
     return Response({"products": serializer.data}, status=HTTP_200_OK)
+
+
+class SkuViewSet(viewsets.ModelViewSet):
+    queryset = Sku.objects.all()
+    serializer_class = SkuSerializer
+    permission_classes = [IsSupervisor]
+
+    def perform_create(self, serializer):
+        serializer.save(status='pending')  # Default status
+
+
+class ProductDetailView(viewsets.ReadOnlyModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [IsSupervisor]
+
+    def get_queryset(self):
+        return Product.objects.prefetch_related('skus').filter(skus__status='approved')
