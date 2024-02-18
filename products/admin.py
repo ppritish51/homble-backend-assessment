@@ -6,17 +6,17 @@ from products.models import Product, Sku
 class SkuInline(admin.StackedInline):
     model = Sku
     extra = 1  # Number of extra blank forms
-    fields = ("size", "price")
+    fields = ("size", "selling_price", "platform_commission", "cost_price")
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "price", "managed_by", "is_refrigerated", "edited_at")
+    list_display = ("name", "managed_by", "is_refrigerated", "edited_at")
     ordering = ("-id",)
     search_fields = ("name",)
     list_filter = ("is_refrigerated", "category", "edited_at")
     fields = (
-        ("name", "price"),
+        "name",
         ("category", "is_refrigerated"),
         "description",
         "ingredients",  # New field
@@ -25,7 +25,7 @@ class ProductAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ("category", "managed_by")
     readonly_fields = ("id", "created_at", "edited_at")
-    inlines = [SkuInline]  # Add SkuInline
+    inlines = [SkuInline]
 
 
 class ProductInline(admin.StackedInline):
@@ -43,6 +43,6 @@ class ProductInline(admin.StackedInline):
 
 @admin.register(Sku)
 class SkuAdmin(admin.ModelAdmin):
-    list_display = ("product", "size", "price")
+    list_display = ['product', 'size', 'selling_price', 'platform_commission', 'cost_price']
     search_fields = ("product__name",)
     list_filter = ("product",)

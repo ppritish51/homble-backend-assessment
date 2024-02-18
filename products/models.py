@@ -63,9 +63,15 @@ class Product(models.Model):
 
 
 class Sku(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='skus')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     size = models.PositiveSmallIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    selling_price = models.PositiveSmallIntegerField()
+    platform_commission = models.PositiveSmallIntegerField()
+    cost_price = models.PositiveSmallIntegerField()
+
+    def save(self, *args, **kwargs):
+        self.selling_price = self.cost_price + self.platform_commission
+        super(Sku, self).save(*args, **kwargs)
 
     class Meta:
         unique_together = ('product', 'size')
